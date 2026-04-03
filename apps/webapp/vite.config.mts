@@ -1,4 +1,5 @@
 /// <reference types='vitest' />
+import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -12,6 +13,11 @@ export default defineConfig(() => ({
   preview: {
     port: 4200,
     host: 'localhost',
+  },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
   },
   plugins: [react()],
   // Uncomment this if you are using workers.

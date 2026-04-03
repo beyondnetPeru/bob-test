@@ -8,12 +8,7 @@ import {
   Layers,
   Activity,
 } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from '@/app/lib/cn';
 
 type Tab =
   | 'dashboard'

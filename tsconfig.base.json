@@ -16,6 +16,11 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["apps/webapp/src/*"]
+    },
+    "ignoreDeprecations": "6.0",
     "customConditions": ["@org/source"]
   }
 }

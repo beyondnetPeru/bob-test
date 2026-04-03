@@ -4,7 +4,11 @@ import {
   useDeleteCategoryMutation,
   useGetCategoriesQuery,
   useUpdateCategoryMutation,
-} from '../../api/apiSlice';
+} from '@/app/api/apiSlice';
+import { Button } from '@/app/components/ui/Button';
+import { TextInput } from '@/app/components/ui/Field';
+import { PageHeader } from '@/app/components/ui/PageHeader';
+import { SearchInput } from '@/app/components/ui/SearchInput';
 
 export const ProductCategoryPage = () => {
   const { data: categories, isLoading } = useGetCategoriesQuery();
@@ -43,37 +47,26 @@ export const ProductCategoryPage = () => {
 
   return (
     <section className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold text-white tracking-tight">
-          Product Category Maintenance
-        </h1>
-        <p className="mt-2 text-sm text-zinc-400">
-          List, search, add, edit, and delete product categories.
-        </p>
-      </header>
+      <PageHeader
+        title="Product Category Maintenance"
+        description="List, search, add, edit, and delete product categories."
+      />
 
       <div className="grid gap-3 md:grid-cols-[1fr_360px]">
-        <input
-          type="search"
+        <SearchInput
           value={search}
-          onChange={(event) => setSearch(event.target.value)}
+          onChange={setSearch}
           placeholder="Search categories"
-          className="h-10 rounded-xl border border-zinc-700 bg-zinc-900/60 px-3 text-sm outline-none focus:border-primary"
         />
         <form onSubmit={onCreate} className="flex gap-2">
-          <input
-            type="text"
+          <TextInput
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
             placeholder="New category"
-            className="h-10 flex-1 rounded-xl border border-zinc-700 bg-zinc-900/60 px-3 text-sm outline-none focus:border-primary"
           />
-          <button
-            type="submit"
-            className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-white"
-          >
+          <Button type="submit" variant="primary">
             Add
-          </button>
+          </Button>
         </form>
       </div>
 
@@ -104,11 +97,10 @@ export const ProductCategoryPage = () => {
               <tr key={item.id} className="border-t border-zinc-800/40">
                 <td className="px-4 py-3">
                   {editingId === item.id ? (
-                    <input
-                      type="text"
+                    <TextInput
                       value={editingName}
                       onChange={(event) => setEditingName(event.target.value)}
-                      className="h-9 w-full rounded-lg border border-zinc-700 bg-zinc-900/60 px-3 text-sm outline-none focus:border-primary"
+                      className="h-9"
                     />
                   ) : (
                     <span className="text-zinc-200">{item.name}</span>
@@ -117,29 +109,32 @@ export const ProductCategoryPage = () => {
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
                     {editingId === item.id ? (
-                      <button
+                      <Button
+                        size="sm"
+                        variant="primary"
                         onClick={() => void onSaveEdit(item.id)}
-                        className="h-8 rounded-lg bg-primary px-3 text-xs font-semibold text-white"
                       >
                         Save
-                      </button>
+                      </Button>
                     ) : (
-                      <button
+                      <Button
+                        size="sm"
+                        variant="secondary"
                         onClick={() => {
                           setEditingId(item.id);
                           setEditingName(item.name);
                         }}
-                        className="h-8 rounded-lg border border-zinc-700 px-3 text-xs text-zinc-200"
                       >
                         Edit
-                      </button>
+                      </Button>
                     )}
-                    <button
+                    <Button
+                      size="sm"
+                      variant="danger"
                       onClick={() => void deleteCategory(item.id)}
-                      className="h-8 rounded-lg border border-red-700/50 px-3 text-xs text-red-300"
                     >
                       Delete
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>
