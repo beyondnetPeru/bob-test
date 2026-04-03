@@ -2,6 +2,7 @@
 
 # compiled output
 dist
+build
 tmp
 out-tsc
 
@@ -23,14 +24,18 @@ node_modules
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.history/
 
 # misc
 /.sass-cache
 /connect.lock
 /coverage
+coverage/
+*.lcov
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
+pnp-debug.log
 testem.log
 /typings
 
@@ -51,3 +56,18 @@ vite.config.*.timestamp*
 # .NET build artifacts
 **/bin/
 **/obj/
+.vs/
+TestResults/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# React/Node build caches and outputs
+.next/
+.nuxt/
+.turbo/
+.cache/
+.parcel-cache/
+.eslintcache
+*.tsbuildinfo
