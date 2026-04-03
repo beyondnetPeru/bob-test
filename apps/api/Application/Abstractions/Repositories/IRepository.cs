@@ -31,3 +31,7 @@ public interface IProductRepository : IRepository<Product, Guid>
 public interface IInventoryRepository : IRepository<HardwareInventory, Guid>
 {
 }
+
+public interface IAssetConfigurationRepository : IRepository<AssetConfiguration, Guid>
+{
+}

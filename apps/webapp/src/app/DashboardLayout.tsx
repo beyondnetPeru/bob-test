@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
-import { InventoryDashboard } from './features/inventory/InventoryDashboard';
-import { ProductCatalog } from './features/catalog/ProductCatalog';
-import { ReferenceData } from './features/reference/ReferenceData';
+import { lazy, Suspense, useState } from 'react';
 import {
-  Layout,
+  LayoutDashboard,
   Server,
   Database,
-  Settings,
-  Shield,
+  Tags,
+  Building2,
+  Layers,
   Activity,
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -17,31 +15,93 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-type Tab = 'fleet' | 'catalog' | 'reference';
+type Tab =
+  | 'dashboard'
+  | 'hardwareinventory'
+  | 'products'
+  | 'productcategory'
+  | 'manufacturer'
+  | 'assetconfiguration';
 
-export const DashboardLayout: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('fleet');
+const OperationsDashboard = lazy(() =>
+  import('./features/dashboard/OperationsDashboard').then((m) => ({
+    default: m.OperationsDashboard,
+  }))
+);
+
+const InventoryDashboard = lazy(() =>
+  import('./features/inventory/InventoryDashboard').then((m) => ({
+    default: m.InventoryDashboard,
+  }))
+);
+
+const ProductCatalog = lazy(() =>
+  import('./features/catalog/ProductCatalog').then((m) => ({
+    default: m.ProductCatalog,
+  }))
+);
+
+const ProductCategoryPage = lazy(() =>
+  import('./features/categories/ProductCategoryPage').then((m) => ({
+    default: m.ProductCategoryPage,
+  }))
+);
+
+const ManufacturerPage = lazy(() =>
+  import('./features/manufacturers/ManufacturerPage').then((m) => ({
+    default: m.ManufacturerPage,
+  }))
+);
+
+const AssetConfigurationPage = lazy(() =>
+  import('./features/asset-configurations/AssetConfigurationPage').then(
+    (m) => ({
+      default: m.AssetConfigurationPage,
+    })
+  )
+);
+
+export const DashboardLayout = () => {
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
 
   const navigation = [
     {
-      id: 'fleet',
-      name: 'Fleet Inventory',
+      id: 'dashboard',
+      name: 'Dashboard',
+      icon: LayoutDashboard,
+      description: 'Centralized UX and UI flow',
+    },
+    {
+      id: 'hardwareinventory',
+      name: 'Hardware Inventory',
       icon: Server,
-      description: 'Manage hardware assets',
+      description: 'Manage physical assets',
     },
     {
-      id: 'catalog',
-      name: 'Product Catalog',
+      id: 'products',
+      name: 'Products',
       icon: Database,
-      description: 'Technical specifications',
+      description: 'Maintain product records',
     },
     {
-      id: 'reference',
-      name: 'Reference Data',
-      icon: Settings,
-      description: 'System definitions',
+      id: 'productcategory',
+      name: 'Product Category',
+      icon: Tags,
+      description: 'Maintain category records',
     },
-  ];
+    {
+      id: 'manufacturer',
+      name: 'Manufacturer',
+      icon: Building2,
+      description: 'Maintain vendors',
+    },
+    {
+      id: 'assetconfiguration',
+      name: 'Asset Configuration',
+      icon: Layers,
+      description: 'Maintain component mappings',
+    },
+  ] as const;
 
   return (
     <div className="flex min-h-screen bg-[#09090b] text-zinc-400 font-sans selection:bg-primary/30">
@@ -105,14 +165,14 @@ export const DashboardLayout: React.FC = () => {
         <div className="mt-auto p-8 border-t border-zinc-800/50 bg-zinc-900/20">
           <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-800/30 border border-zinc-700/30">
             <div className="w-8 h-8 rounded-lg bg-zinc-700 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-zinc-400" />
+              <LayoutDashboard className="w-4 h-4 text-zinc-400" />
             </div>
             <div className="flex-1 overflow-hidden">
               <p className="text-xs font-semibold text-zinc-200 truncate truncate">
-                Admin Terminal
+                Data Operations
               </p>
               <p className="text-[10px] text-zinc-500 truncate">
-                v1.2.4-stable
+                Entity maintenance enabled
               </p>
             </div>
           </div>
@@ -122,17 +182,34 @@ export const DashboardLayout: React.FC = () => {
       {/* Main Content Area */}
       <main className="flex-1 h-screen overflow-y-auto custom-scrollbar">
         <div className="max-w-7xl mx-auto p-4 md:p-8">
-          {activeTab === 'fleet' && <InventoryDashboard />}
-          {activeTab === 'catalog' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <ProductCatalog />
-            </div>
-          )}
-          {activeTab === 'reference' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <ReferenceData />
-            </div>
-          )}
+          <Suspense
+            fallback={
+              <div className="h-64 rounded-2xl bg-zinc-900/30 border border-zinc-800/50 animate-pulse" />
+            }
+          >
+            {activeTab === 'dashboard' && <OperationsDashboard />}
+            {activeTab === 'hardwareinventory' && <InventoryDashboard />}
+            {activeTab === 'products' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <ProductCatalog />
+              </div>
+            )}
+            {activeTab === 'productcategory' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <ProductCategoryPage />
+              </div>
+            )}
+            {activeTab === 'manufacturer' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <ManufacturerPage />
+              </div>
+            )}
+            {activeTab === 'assetconfiguration' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <AssetConfigurationPage />
+              </div>
+            )}
+          </Suspense>
         </div>
       </main>
     </div>

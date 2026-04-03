@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import {
   useGetManufacturersQuery,
   useDeleteManufacturerMutation,
@@ -7,15 +7,9 @@ import {
   useDeleteCategoryMutation,
   useCreateCategoryMutation,
 } from '../../api/apiSlice';
-import { Settings, Shield, Plus, Trash2, Edit3, Type, Tag } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { Shield, Plus, Trash2, Edit3, Tag } from 'lucide-react';
 
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-export const ReferenceData: React.FC = () => {
+export const ReferenceData = () => {
   const { data: manufacturers, isLoading: mLoading } =
     useGetManufacturersQuery();
   const { data: categories, isLoading: cLoading } = useGetCategoriesQuery();
@@ -27,14 +21,14 @@ export const ReferenceData: React.FC = () => {
   const [newMName, setNewMName] = useState('');
   const [newCName, setNewCName] = useState('');
 
-  const handleAddM = async (e: React.FormEvent) => {
+  const handleAddM = async (e: FormEvent) => {
     e.preventDefault();
     if (!newMName) return;
     await createManufacturer({ name: newMName });
     setNewMName('');
   };
 
-  const handleAddC = async (e: React.FormEvent) => {
+  const handleAddC = async (e: FormEvent) => {
     e.preventDefault();
     if (!newCName) return;
     await createCategory({ name: newCName });

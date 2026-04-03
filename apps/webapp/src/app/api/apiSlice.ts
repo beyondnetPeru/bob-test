@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const DEPLOYED_URL = 'http://localhost:5000/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001/api';
 
 export interface InventoryItem {
   id: string; // GUID
@@ -30,10 +31,43 @@ export interface Product {
   manufacturerName: string;
 }
 
+export interface AssetConfiguration {
+  id: string;
+  inventoryId: string;
+  inventoryName: string;
+  productId: string;
+  productModelName: string;
+  categoryName: string;
+  quantity: number;
+  standardValue: number | null;
+  location: string | null;
+}
+
+export interface ProductUpsertRequest {
+  categoryId: string;
+  manufacturerId: string;
+  modelName: string;
+  description: string;
+}
+
+export interface AssetConfigurationUpsertRequest {
+  inventoryId: string;
+  productId: string;
+  quantity: number;
+  standardValue: number | null;
+  location: string | null;
+}
+
 export const apiSlice = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({ baseUrl: DEPLOYED_URL }),
-  tagTypes: ['Inventory', 'Manufacturer', 'Category', 'Product'],
+  baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
+  tagTypes: [
+    'Inventory',
+    'Manufacturer',
+    'Category',
+    'Product',
+    'AssetConfiguration',
+  ],
   endpoints: (builder) => ({
     // --- Inventory ---
     getInventory: builder.query<InventoryItem[], void>({
@@ -53,7 +87,7 @@ export const apiSlice = createApi({
     updateInventory: builder.mutation<void, Partial<InventoryItem>>({
       query: ({ id, ...patch }) => ({
         url: `/inventory/${id}`,
-        method: 'PATCH',
+        method: 'PUT',
         body: patch,
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Inventory', id }],
@@ -135,11 +169,14 @@ export const apiSlice = createApi({
             ]
           : [{ type: 'Product', id: 'LIST' }],
     }),
-    createProduct: builder.mutation<string, Partial<Product>>({
+    createProduct: builder.mutation<string, ProductUpsertRequest>({
       query: (body) => ({ url: '/product', method: 'POST', body }),
       invalidatesTags: [{ type: 'Product', id: 'LIST' }],
     }),
-    updateProduct: builder.mutation<void, Product>({
+    updateProduct: builder.mutation<
+      void,
+      { id: string } & ProductUpsertRequest
+    >({
       query: ({ id, ...body }) => ({
         url: `/product/${id}`,
         method: 'PUT',
@@ -150,6 +187,45 @@ export const apiSlice = createApi({
     deleteProduct: builder.mutation<void, string>({
       query: (id) => ({ url: `/product/${id}`, method: 'DELETE' }),
       invalidatesTags: [{ type: 'Product', id: 'LIST' }],
+    }),
+
+    // --- Asset Configurations ---
+    getAssetConfigurations: builder.query<AssetConfiguration[], void>({
+      query: () => '/assetconfiguration',
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({
+                type: 'AssetConfiguration' as const,
+                id,
+              })),
+              { type: 'AssetConfiguration', id: 'LIST' },
+            ]
+          : [{ type: 'AssetConfiguration', id: 'LIST' }],
+    }),
+    createAssetConfiguration: builder.mutation<
+      string,
+      AssetConfigurationUpsertRequest
+    >({
+      query: (body) => ({ url: '/assetconfiguration', method: 'POST', body }),
+      invalidatesTags: [{ type: 'AssetConfiguration', id: 'LIST' }],
+    }),
+    updateAssetConfiguration: builder.mutation<
+      void,
+      { id: string } & AssetConfigurationUpsertRequest
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/assetconfiguration/${id}`,
+        method: 'PUT',
+        body: { id, ...body },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'AssetConfiguration', id },
+      ],
+    }),
+    deleteAssetConfiguration: builder.mutation<void, string>({
+      query: (id) => ({ url: `/assetconfiguration/${id}`, method: 'DELETE' }),
+      invalidatesTags: [{ type: 'AssetConfiguration', id: 'LIST' }],
     }),
   }),
 });
@@ -171,4 +247,8 @@ export const {
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useGetAssetConfigurationsQuery,
+  useCreateAssetConfigurationMutation,
+  useUpdateAssetConfigurationMutation,
+  useDeleteAssetConfigurationMutation,
 } = apiSlice;

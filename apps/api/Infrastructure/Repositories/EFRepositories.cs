@@ -46,3 +46,21 @@ public sealed class InventoryRepository(AppDbContext context) : EfRepository<Har
             .ThenInclude(p => p.Category)
             .ToListAsync(cancellationToken);
 }
+
+public sealed class AssetConfigurationRepository(AppDbContext context) : EfRepository<AssetConfiguration, Guid>(context), IAssetConfigurationRepository
+{
+    public override Task<AssetConfiguration?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        _context.AssetConfigurations
+            .Include(ac => ac.Inventory)
+            .Include(ac => ac.Product)
+            .ThenInclude(p => p.Category)
+            .FirstOrDefaultAsync(ac => ac.Id == id, cancellationToken);
+
+    public override Task<List<AssetConfiguration>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        _context.AssetConfigurations
+            .AsNoTracking()
+            .Include(ac => ac.Inventory)
+            .Include(ac => ac.Product)
+            .ThenInclude(p => p.Category)
+            .ToListAsync(cancellationToken);
+}

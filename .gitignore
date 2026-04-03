@@ -63,6 +63,11 @@ TestResults/
 *.userosscache
 *.sln.docstates
 
+# Local SQLite artifacts
+*.db
+*.db-shm
+*.db-wal
+
 # React/Node build caches and outputs
 .next/
 .nuxt/

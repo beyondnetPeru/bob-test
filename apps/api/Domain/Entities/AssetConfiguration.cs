@@ -24,4 +24,16 @@ public sealed class AssetConfiguration : Entity
         StandardValue = standardValue;
         Location = location;
     }
+
+    public void Update(Guid inventoryId, Guid productId, int quantity, decimal? standardValue, string? location)
+    {
+        if (quantity < 1)
+            throw new ArgumentException("Quantity must be at least 1.", nameof(quantity));
+
+        InventoryId = inventoryId;
+        ProductId = productId;
+        Quantity = quantity;
+        StandardValue = standardValue;
+        Location = location;
+    }
 }

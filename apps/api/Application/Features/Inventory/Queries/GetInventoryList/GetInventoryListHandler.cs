@@ -8,12 +8,14 @@ namespace Application.Features.Inventory.Queries.GetInventoryList;
 
 public sealed record GetInventoryListQuery : IQuery<List<InventoryListDto>>;
 
-public sealed record InventoryListDto(
-    Guid Id,
-    string AssetName,
-    decimal WeightKg,
-    string? PerformanceTier,
-    int ComponentCount);
+public sealed class InventoryListDto
+{
+    public Guid Id { get; init; }
+    public string AssetName { get; init; } = string.Empty;
+    public decimal WeightKg { get; init; }
+    public string? PerformanceTier { get; init; }
+    public int ComponentCount { get; init; }
+}
 
 public sealed class GetInventoryListHandler(
     IInventoryRepository repository,

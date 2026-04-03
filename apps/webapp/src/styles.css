@@ -41,7 +41,7 @@ body {
   }
 
   .glass-card {
-    @apply glass rounded-xl transition-all duration-300 hover:border-zinc-700/80 hover:bg-zinc-900/60;
+    @apply bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 shadow-xl rounded-xl transition-all duration-300 hover:border-zinc-700/80 hover:bg-zinc-900/60;
   }
 
   .badge {

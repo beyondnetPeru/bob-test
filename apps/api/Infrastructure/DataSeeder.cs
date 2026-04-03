@@ -32,33 +32,32 @@ public sealed class DataSeeder(
         var genericId = await GetOrCreateManufacturer("Generic");
 
         var markdown = await File.ReadAllTextAsync(filePath);
-        var tableMatch = Regex.Match(markdown, @"\| Memory \| Storage \| Ports \| GPU \| Weight \| PSU \| CPU \|\r?\n\| :----- \| :--------- \| :------------------------------------- \| :---------------------- \| :------ \| :--------- \| :-------------------------------------------- \|\r?\n([\s\S]+?)\r?\n\r?\n", RegexOptions.Multiline);
+        var rows = ExtractHardwareRows(markdown);
 
-        if (!tableMatch.Success) 
+        if (rows.Count == 0)
         {
             logger.LogWarning("Markdown table not found in seed file.");
             return;
         }
 
-        var rows = tableMatch.Groups[1].Value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        logger.LogInformation("Found {Count} raw hardware rows to seed", rows.Count);
 
-        foreach (var row in rows)
+        for (var i = 0; i < rows.Count; i++)
         {
-            var cols = row.Split('|').Select(c => c.Trim()).ToArray();
-            if (cols.Length < 8) continue;
+            var row = rows[i];
 
-            // Mapping: | 1:Memory | 2:Storage | 3:Ports | 4:GPU | 5:Weight | 6:PSU | 7:CPU |
-            var rawMemory = cols[1];
-            var rawStorage = cols[2];
-            var rawPorts = cols[3];
-            var rawGpu = cols[4];
-            var rawWeight = cols[5];
-            var rawPsu = cols[6];
-            var rawCpu = cols[7];
+            // Mapping: Memory | Storage | Ports | GPU | Weight | PSU | CPU
+            var rawMemory = row[0];
+            var rawStorage = row[1];
+            var rawPorts = row[2];
+            var rawGpu = row[3];
+            var rawWeight = row[4];
+            var rawPsu = row[5];
+            var rawCpu = row[6];
 
             // 1. Create the Machine
             var weightKg = cleansingService.ParseWeight(rawWeight);
-            var machine = new HardwareInventory($"Machine-{Guid.NewGuid().ToString()[..8]}", weightKg);
+            var machine = new HardwareInventory($"Asset-{i + 1:000}", weightKg);
 
             // 2. Add CPU
             var cpuManufacturerId = rawCpu.Contains("Intel", StringComparison.OrdinalIgnoreCase) ? intelId : amdId;
@@ -83,7 +82,7 @@ public sealed class DataSeeder(
             machine.AddConfiguration(storageProduct, 1, storageCapacity, "SATA/NVMe");
 
             // 6. Add PSU
-            var psuWatts = cleansingService.ParseCapacity(rawPsu); 
+            var psuWatts = ParseNumericValue(rawPsu);
             var psuProduct = await GetOrCreateProduct(psuCatId, genericId, rawPsu);
             machine.AddConfiguration(psuProduct, 1, psuWatts, "Chassis Internal");
 
@@ -106,6 +105,63 @@ public sealed class DataSeeder(
 
         await context.SaveChangesAsync();
         logger.LogInformation("Successfully seeded database from {FilePath}", filePath);
+    }
+
+    private static List<string[]> ExtractHardwareRows(string markdown)
+    {
+        var lines = markdown
+            .Split('\n', StringSplitOptions.None)
+            .Select(l => l.Trim())
+            .ToList();
+
+        var headerIndex = lines.FindIndex(l =>
+            l.StartsWith("|", StringComparison.Ordinal) &&
+            l.Contains("Memory", StringComparison.OrdinalIgnoreCase) &&
+            l.Contains("Storage", StringComparison.OrdinalIgnoreCase) &&
+            l.Contains("CPU", StringComparison.OrdinalIgnoreCase));
+
+        if (headerIndex < 0)
+            return [];
+
+        var rowList = new List<string[]>();
+
+        for (var i = headerIndex + 1; i < lines.Count; i++)
+        {
+            var line = lines[i];
+
+            if (string.IsNullOrWhiteSpace(line))
+                break;
+
+            if (!line.StartsWith("|", StringComparison.Ordinal))
+                break;
+
+            // Skip markdown separator rows like | :--- | :--- |
+            if (line.Contains(":---", StringComparison.Ordinal) ||
+                line.Contains("---", StringComparison.Ordinal) && !Regex.IsMatch(line, @"\d"))
+            {
+                continue;
+            }
+
+            var cols = line
+                .Trim('|')
+                .Split('|', StringSplitOptions.None)
+                .Select(c => c.Trim())
+                .ToArray();
+
+            if (cols.Length == 7)
+                rowList.Add(cols);
+        }
+
+        return rowList;
+    }
+
+    private static decimal? ParseNumericValue(string rawValue)
+    {
+        var match = Regex.Match(rawValue, @"(\d+(\.\d+)?)");
+        if (!match.Success)
+            return null;
+
+        return decimal.Parse(match.Groups[1].Value);
     }
 
     private async Task<Guid> GetOrCreateCategory(string name)

@@ -1,20 +1,45 @@
-import React, { useState } from 'react';
-import { useGetInventoryQuery, InventoryItem } from '../../api/apiSlice';
-import { HardwareTable } from './components/HardwareTable';
-import { HardwareSearch } from './components/HardwareSearch';
+import { FormEvent, useMemo, useState } from 'react';
+import {
+  InventoryItem,
+  useCreateInventoryMutation,
+  useDeleteInventoryMutation,
+  useGetInventoryQuery,
+} from '../../api/apiSlice';
 import { EditHardwareModal } from './components/EditHardwareModal';
 import { Loader2, RefreshCcw } from 'lucide-react';
 
-export const InventoryDashboard: React.FC = () => {
+export const InventoryDashboard = () => {
   const { data: items, isLoading, isError, refetch } = useGetInventoryQuery();
+  const [createInventory] = useCreateInventoryMutation();
+  const [deleteInventory] = useDeleteInventoryMutation();
+
   const [searchTerm, setSearchTerm] = useState('');
+  const [assetName, setAssetName] = useState('');
+  const [weightKg, setWeightKg] = useState('');
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
 
-  const filteredItems = items?.filter(
-    (item) =>
-      item.assetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.performanceTier?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredItems = useMemo(
+    () =>
+      (items ?? []).filter(
+        (item) =>
+          item.assetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.performanceTier?.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    [items, searchTerm]
   );
+
+  const handleCreate = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!assetName.trim() || !weightKg) return;
+
+    await createInventory({
+      assetName: assetName.trim(),
+      weightKg: Number(weightKg),
+    }).unwrap();
+
+    setAssetName('');
+    setWeightKg('');
+  };
 
   const handleEdit = (item: InventoryItem) => {
     setEditingItem(item);
@@ -53,24 +78,104 @@ export const InventoryDashboard: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 py-8">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 py-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
-            Hardware <span className="text-primary italic">Inventory</span>
+          <h1 className="text-3xl font-bold tracking-tight text-white mb-2">
+            Hardware Inventory Maintenance
           </h1>
-          <p className="text-zinc-500 font-medium">
-            Monitoring {items?.length || 0} production-ready assets across the
-            fleet.
+          <p className="text-zinc-400 font-medium text-sm">
+            List, search, add, edit, and delete hardware inventory records.
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs font-mono text-zinc-500 bg-zinc-900 px-3 py-1.5 rounded-full border border-zinc-800/50">
           <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          SYSTEMS_ONLINE
+          ASSETS: {items?.length || 0}
         </div>
       </header>
 
-      <HardwareSearch value={searchTerm} onChange={setSearchTerm} />
-      <HardwareTable items={filteredItems || []} onEdit={handleEdit} />
+      <div className="grid gap-3 md:grid-cols-[1fr_420px]">
+        <input
+          type="search"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          placeholder="Search by asset name or performance tier"
+          className="h-10 rounded-xl border border-zinc-700 bg-zinc-900/60 px-3 text-sm outline-none focus:border-primary"
+        />
+
+        <form
+          onSubmit={handleCreate}
+          className="grid grid-cols-[1fr_140px_72px] gap-2"
+        >
+          <input
+            type="text"
+            value={assetName}
+            onChange={(event) => setAssetName(event.target.value)}
+            placeholder="Asset name"
+            className="h-10 rounded-xl border border-zinc-700 bg-zinc-900/60 px-3 text-sm outline-none focus:border-primary"
+            required
+          />
+          <input
+            type="number"
+            step="0.01"
+            min="0.01"
+            value={weightKg}
+            onChange={(event) => setWeightKg(event.target.value)}
+            placeholder="Weight kg"
+            className="h-10 rounded-xl border border-zinc-700 bg-zinc-900/60 px-3 text-sm outline-none focus:border-primary"
+            required
+          />
+          <button
+            type="submit"
+            className="h-10 rounded-xl bg-primary text-sm font-semibold text-white"
+          >
+            Add
+          </button>
+        </form>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-zinc-800/60">
+        <table className="w-full text-sm">
+          <thead className="bg-zinc-900/50 text-zinc-400">
+            <tr>
+              <th className="px-4 py-3 text-left">Asset Name</th>
+              <th className="px-4 py-3 text-left">Tier</th>
+              <th className="px-4 py-3 text-left">Weight (kg)</th>
+              <th className="px-4 py-3 text-left">Components</th>
+              <th className="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredItems.map((item) => (
+              <tr key={item.id} className="border-t border-zinc-800/40">
+                <td className="px-4 py-3 text-zinc-100">{item.assetName}</td>
+                <td className="px-4 py-3 text-zinc-300">
+                  {item.performanceTier || '-'}
+                </td>
+                <td className="px-4 py-3 text-zinc-300">{item.weightKg}</td>
+                <td className="px-4 py-3 text-zinc-400">
+                  {item.componentCount}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="h-8 rounded-lg border border-zinc-700 px-3 text-xs text-zinc-200"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => void deleteInventory(item.id)}
+                      className="h-8 rounded-lg border border-red-700/50 px-3 text-xs text-red-300"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <EditHardwareModal
         item={editingItem}
