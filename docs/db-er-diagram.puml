@@ -1,0 +1,56 @@
+@startuml Hardware Inventory ER Diagram (Unified Product Model)
+
+!theme plain
+skinparam linetype ortho
+
+entity "Manufacturers" as Manufacturers {
+    + Id : INT <<PK>>
+    --
+    Name : NVARCHAR(100) <<UNIQUE>>
+    CreatedAt : DATETIMEOFFSET
+    UpdatedAt : DATETIMEOFFSET
+}
+
+entity "ProductCategories" as ProductCategories {
+    + Id : INT <<PK>>
+    --
+    Name : NVARCHAR(50) <<UNIQUE>>
+}
+
+entity "Products" as Products {
+    + Id : INT <<PK>>
+    --
+    CategoryId : INT <<FK>>
+    ManufacturerId : INT <<FK>>
+    ModelName : NVARCHAR(255)
+    Description : NVARCHAR(MAX)
+}
+
+entity "HardwareInventory" as Inventory {
+    + Id : UNIQUEIDENTIFIER <<PK>>
+    --
+    AssetName : NVARCHAR(255)
+    WeightKg : DECIMAL(10,2)
+    PerformanceTier : NVARCHAR(50)
+    CreatedAt : DATETIMEOFFSET
+    UpdatedAt : DATETIMEOFFSET
+    RowVersion : ROWVERSION
+}
+
+entity "AssetConfigurations" as AssetConfig {
+    + Id : INT <<PK>>
+    --
+    InventoryId : UNIQUEIDENTIFIER <<FK>>
+    ProductId : INT <<FK>>
+    Quantity : INT
+    StandardValue : DECIMAL(18,4)
+    Location : NVARCHAR(100)
+}
+
+' Relationships
+Manufacturers ||--o{ Products : "manufactures"
+ProductCategories ||--o{ Products : "classifies"
+Inventory ||--o{ AssetConfig : "configured with"
+Products ||--o{ AssetConfig : "specifies"
+
+@enduml

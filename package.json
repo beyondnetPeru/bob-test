@@ -1,0 +1,57 @@
+{
+  "name": "@org/source",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "private": true,
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "@nx-dotnet/core": "^3.0.2",
+    "@nx/js": "22.6.4",
+    "@nx/react": "^22.6.4",
+    "@nx/vite": "^22.6.4",
+    "@nx/web": "22.6.4",
+    "@reduxjs/toolkit": "^2.11.2",
+    "@swc-node/register": "1.11.1",
+    "@swc/core": "1.15.8",
+    "@swc/helpers": "0.5.18",
+    "@tailwindcss/postcss": "^4.2.2",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.0.0",
+    "@vitest/ui": "~4.1.0",
+    "autoprefixer": "^10.4.27",
+    "husky": "^9.1.7",
+    "jiti": "2.4.2",
+    "jsdom": "~22.1.0",
+    "lint-staged": "^16.4.0",
+    "nx": "22.6.2",
+    "postcss": "^8.5.8",
+    "prettier": "^2.6.2",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.14.0",
+    "tailwindcss": "^4.2.2",
+    "tslib": "^2.3.0",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.0",
+    "vitest": "~4.1.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "lint-staged": {
+    "*.{js,ts,tsx,json,md,css,scss,yml,yaml}": "prettier --write"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.7.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.5.0"
+  }
+}
