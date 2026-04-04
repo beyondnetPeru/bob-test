@@ -68,21 +68,21 @@ export const DashboardLayout = () => {
     },
     {
       id: 'hardwareinventory',
-      name: 'Hardware Inventory',
+      name: 'Computer Catalog',
       icon: Server,
-      description: 'Manage physical assets',
+      description: 'Browse and compose computers',
     },
     {
       id: 'products',
-      name: 'Products',
+      name: 'Component Catalog',
       icon: Database,
-      description: 'Maintain product records',
+      description: 'Maintain reusable parts',
     },
     {
       id: 'productcategory',
-      name: 'Product Category',
+      name: 'Component Types',
       icon: Tags,
-      description: 'Maintain category records',
+      description: 'Maintain component groups',
     },
     {
       id: 'manufacturer',
@@ -92,7 +92,7 @@ export const DashboardLayout = () => {
     },
     {
       id: 'assetconfiguration',
-      name: 'Asset Configuration',
+      name: 'Computer Composition',
       icon: Layers,
       description: 'Maintain component mappings',
     },

@@ -28,7 +28,7 @@ public sealed class InventoryController(IMediator mediator) : ApiControllerBase(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<Guid>> CreateHardware(CreateHardwareRequest request)
         => HandleCreate(
-            await Mediator.Send(new CreateHardwareCommand(request.AssetName, request.WeightKg)),
+            await Mediator.Send(new CreateHardwareCommand(request.AssetName, request.WeightKg, request.DeviceCategory)),
             nameof(GetInventoryItem));
 
     [HttpPut("{id:guid}")]
@@ -40,7 +40,7 @@ public sealed class InventoryController(IMediator mediator) : ApiControllerBase(
         var mismatch = ValidateIdMatch(id, request.Id);
         if (mismatch is not null) return mismatch;
 
-        return HandleCommand(await Mediator.Send(new UpdateHardwareCommand(request.Id, request.AssetName, request.WeightKg)));
+        return HandleCommand(await Mediator.Send(new UpdateHardwareCommand(request.Id, request.AssetName, request.WeightKg, request.DeviceCategory)));
     }
 
     [HttpDelete("{id:guid}")]

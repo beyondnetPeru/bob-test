@@ -8,7 +8,10 @@ public sealed record CreateHardwareRequest(
     string AssetName,
     [Required]
     [Range(0.01, 10000.00, ErrorMessage = "Weight must be between 0.01 and 10000.00 kg")]
-    decimal WeightKg
+    decimal WeightKg,
+    [Required(ErrorMessage = "Device category is required")]
+    [StringLength(80, MinimumLength = 2, ErrorMessage = "Device category must be between 2 and 80 characters")]
+    string DeviceCategory
 );
 
 public sealed record UpdateHardwareRequest(
@@ -19,5 +22,8 @@ public sealed record UpdateHardwareRequest(
     string AssetName,
     [Required]
     [Range(0.01, 10000.00, ErrorMessage = "Weight must be between 0.01 and 10000.00 kg")]
-    decimal WeightKg
+    decimal WeightKg,
+    [Required(ErrorMessage = "Device category is required")]
+    [StringLength(80, MinimumLength = 2, ErrorMessage = "Device category must be between 2 and 80 characters")]
+    string DeviceCategory
 );

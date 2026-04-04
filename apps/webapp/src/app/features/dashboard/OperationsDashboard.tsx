@@ -16,21 +16,21 @@ export const OperationsDashboard = () => {
 
   const cards = [
     {
-      title: 'Hardware Inventory',
+      title: 'Computer Catalog',
       value: inventory?.length ?? 0,
-      helper: 'Tracked physical assets',
+      helper: 'Tracked composed computers',
       icon: Server,
     },
     {
-      title: 'Products',
+      title: 'Component Catalog',
       value: products?.length ?? 0,
-      helper: 'Technical product records',
+      helper: 'Reusable CPU/GPU/RAM/etc. records',
       icon: Boxes,
     },
     {
-      title: 'Product Categories',
+      title: 'Component Types',
       value: categories?.length ?? 0,
-      helper: 'Classification entries',
+      helper: 'Technical slot definitions',
       icon: Tags,
     },
     {
@@ -54,8 +54,8 @@ export const OperationsDashboard = () => {
           Operations Dashboard
         </h1>
         <p className="mt-2 text-sm text-zinc-400">
-          Centralized maintenance hub for listing, searching, creating, editing,
-          and deleting inventory data.
+          Centralized maintenance hub for browsing complete computers, managing
+          reusable components, and composing new device builds.
         </p>
       </header>
 

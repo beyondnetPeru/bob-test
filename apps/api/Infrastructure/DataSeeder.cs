@@ -57,7 +57,8 @@ public sealed class DataSeeder(
 
             // 1. Create the Machine
             var weightKg = cleansingService.ParseWeight(rawWeight);
-            var machine = new HardwareInventory($"Asset-{i + 1:000}", weightKg);
+            var deviceCategory = DetermineDeviceCategory(weightKg, rawCpu, rawGpu, rawMemory);
+            var machine = new HardwareInventory($"Asset-{i + 1:000}", weightKg, deviceCategory);
 
             // 2. Add CPU
             var cpuManufacturerId = rawCpu.Contains("Intel", StringComparison.OrdinalIgnoreCase) ? intelId : amdId;
@@ -72,14 +73,13 @@ public sealed class DataSeeder(
 
             // 4. Add RAM
             var ramCapacity = cleansingService.ParseCapacity(rawMemory);
-            var ramProduct = await GetOrCreateProduct(ramCatId, genericId, "Standard Memory");
+            var ramProduct = await GetOrCreateProduct(ramCatId, genericId, NormalizeMemoryLabel(rawMemory));
             machine.AddConfiguration(ramProduct, 1, ramCapacity, "DIMM Slot");
 
             // 5. Add Storage
             var storageCapacity = cleansingService.ParseCapacity(rawStorage);
-            var storageType = cleansingService.NormalizeStorageType(rawStorage);
-            var storageProduct = await GetOrCreateProduct(storageCatId, genericId, $"{storageType} Drive");
-            machine.AddConfiguration(storageProduct, 1, storageCapacity, "SATA/NVMe");
+            var storageProduct = await GetOrCreateProduct(storageCatId, genericId, NormalizeStorageLabel(rawStorage));
+            machine.AddConfiguration(storageProduct, 1, storageCapacity, "Drive Bay");
 
             // 6. Add PSU
             var psuWatts = ParseNumericValue(rawPsu);
@@ -162,6 +162,32 @@ public sealed class DataSeeder(
             return null;
 
         return decimal.Parse(match.Groups[1].Value);
+    }
+
+    private static string NormalizeMemoryLabel(string rawMemory)
+        => Regex.Replace(rawMemory.Trim().ToUpperInvariant(), @"\s+", " ");
+
+    private static string NormalizeStorageLabel(string rawStorage)
+        => Regex.Replace(rawStorage.Trim().ToUpperInvariant().Replace("SDD", "SSD"), @"\s+", " ");
+
+    private static string DetermineDeviceCategory(decimal weightKg, string rawCpu, string rawGpu, string rawMemory)
+    {
+        var memoryValue = ParseNumericValue(rawMemory) ?? 0;
+
+        if (rawCpu.Contains("Extreme", StringComparison.OrdinalIgnoreCase) ||
+            rawCpu.Contains("i7", StringComparison.OrdinalIgnoreCase) ||
+            rawGpu.Contains("1080", StringComparison.OrdinalIgnoreCase) ||
+            memoryValue >= 32)
+        {
+            return "Workstation";
+        }
+
+        if (weightKg <= 6m)
+        {
+            return "Mini PC";
+        }
+
+        return "Desktop PC";
     }
 
     private async Task<Guid> GetOrCreateCategory(string name)

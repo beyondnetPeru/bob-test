@@ -11,6 +11,7 @@ public sealed class CreateHardwareCommandValidator : AbstractValidator<CreateHar
     {
         RuleFor(x => x.AssetName).NotEmpty().MaximumLength(150);
         RuleFor(x => x.WeightKg).GreaterThan(0);
+        RuleFor(x => x.DeviceCategory).NotEmpty().MaximumLength(80);
     }
 }
 
@@ -21,6 +22,7 @@ public sealed class UpdateHardwareCommandValidator : AbstractValidator<UpdateHar
         RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.AssetName).NotEmpty().MaximumLength(150);
         RuleFor(x => x.WeightKg).GreaterThan(0);
+        RuleFor(x => x.DeviceCategory).NotEmpty().MaximumLength(80);
     }
 }
 

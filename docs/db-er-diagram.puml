@@ -1,4 +1,4 @@
-@startuml Hardware Inventory ER Diagram (Unified Product Model)
+@startuml Computer Catalog & Composition ER Diagram
 
 !theme plain
 skinparam linetype ortho
@@ -11,46 +11,76 @@ entity "Manufacturers" as Manufacturers {
     UpdatedAt : DATETIMEOFFSET
 }
 
-entity "ProductCategories" as ProductCategories {
+entity "DeviceCategories" as DeviceCategories {
+    + Id : INT <<PK>>
+    --
+    Name : NVARCHAR(80) <<UNIQUE>>
+    Description : NVARCHAR(255)
+}
+
+entity "ComponentTypes" as ComponentTypes {
     + Id : INT <<PK>>
     --
     Name : NVARCHAR(50) <<UNIQUE>>
+    DisplayName : NVARCHAR(80)
+    SortOrder : INT
 }
 
-entity "Products" as Products {
+entity "ComponentCatalogItems" as ComponentItems {
     + Id : INT <<PK>>
     --
-    CategoryId : INT <<FK>>
+    ComponentTypeId : INT <<FK>>
     ManufacturerId : INT <<FK>>
     ModelName : NVARCHAR(255)
-    Description : NVARCHAR(MAX)
+    SpecSummary : NVARCHAR(255)
+    NormalizedValue : DECIMAL(18,4)
+    Unit : NVARCHAR(30)
+    MetadataJson : NVARCHAR(MAX)
 }
 
-entity "HardwareInventory" as Inventory {
+entity "CatalogProducts" as CatalogProducts {
     + Id : UNIQUEIDENTIFIER <<PK>>
     --
-    AssetName : NVARCHAR(255)
-    WeightKg : DECIMAL(10,2)
+    DeviceCategoryId : INT <<FK>>
+    ProductName : NVARCHAR(150)
+    Sku : NVARCHAR(100)
+    BaseWeightKg : DECIMAL(10,2)
     PerformanceTier : NVARCHAR(50)
-    CreatedAt : DATETIMEOFFSET
-    UpdatedAt : DATETIMEOFFSET
-    RowVersion : ROWVERSION
+    IsActive : BIT
 }
 
-entity "AssetConfigurations" as AssetConfig {
-    + Id : INT <<PK>>
+entity "ProductComponentSelections" as ProductSelections {
+    + Id : BIGINT <<PK>>
     --
-    InventoryId : UNIQUEIDENTIFIER <<FK>>
-    ProductId : INT <<FK>>
+    CatalogProductId : UNIQUEIDENTIFIER <<FK>>
+    ComponentTypeId : INT <<FK>>
+    ComponentCatalogItemId : INT <<FK>>
     Quantity : INT
+    SlotLabel : NVARCHAR(100)
+    DisplayOrder : INT
     StandardValue : DECIMAL(18,4)
-    Location : NVARCHAR(100)
+    Unit : NVARCHAR(30)
+    IsRequired : BIT
 }
 
-' Relationships
-Manufacturers ||--o{ Products : "manufactures"
-ProductCategories ||--o{ Products : "classifies"
-Inventory ||--o{ AssetConfig : "configured with"
-Products ||--o{ AssetConfig : "specifies"
+entity "InventoryAssets" as InventoryAssets {
+    + Id : UNIQUEIDENTIFIER <<PK>>
+    --
+    CatalogProductId : UNIQUEIDENTIFIER <<FK>>
+    AssetTag : NVARCHAR(100)
+    SerialNumber : NVARCHAR(100)
+    AssetName : NVARCHAR(255)
+    AssignedTo : NVARCHAR(150)
+    PhysicalLocation : NVARCHAR(150)
+    Status : NVARCHAR(50)
+}
+
+Manufacturers ||--o{ ComponentItems : "makes"
+ComponentTypes ||--o{ ComponentItems : "classifies"
+DeviceCategories ||--o{ CatalogProducts : "groups"
+CatalogProducts ||--o{ ProductSelections : "is composed of"
+ComponentTypes ||--o{ ProductSelections : "fills slot"
+ComponentItems ||--o{ ProductSelections : "selected item"
+CatalogProducts ||--o{ InventoryAssets : "instantiated as"
 
 @enduml

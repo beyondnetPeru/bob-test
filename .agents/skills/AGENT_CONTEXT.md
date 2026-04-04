@@ -11,6 +11,20 @@ The final "production" must feel realistic and grounded in everyday use cases—
 
 **Research & Support:** You are encouraged to use search engines and other materials as needed to ensure the highest standards. For any specific questions regarding the requirements, contact x@x.com.
 
+### Domain Clarification Update (Current Direction)
+
+The spreadsheet rows should now be interpreted as **complete computer products/configurations**, not just isolated parts.
+
+- A **Product** in business terms is a sellable/composable machine such as `Desktop PC`, `Laptop`, `Workstation`, or `Mini PC`.
+- Each row contains the machine's **typed component selections**: `CPU`, `Power Source`, `Video`, `Ports`, `Hard Disc`, and `RAM`, plus the overall `Weight`.
+- The UI must support:
+  1. listing products by **device category**,
+  2. showing the specs in the same business-friendly layout as the original spreadsheet,
+  3. composing a computer by selecting one or more components by type,
+  4. separating **catalog templates** from **real physical inventory assets**.
+
+> Important for seed compatibility: keep the raw markdown table below with the original column labels (`Memory`, `Storage`, `GPU`, `PSU`) even though the business-facing UI should present them as `RAM`, `Hard Disc`, `Video`, and `Power Source`.
+
 ## 2. Original Requirements List
 
 Using the data in the Spreadsheet provided:
@@ -64,15 +78,23 @@ Agents must strictly adhere to the following tools. Do not substitute unless exp
   2.  `Application` (Use Cases, CQRS Handlers via MediatR, DTOs).
   3.  `Infrastructure` (EF Core DbContext, Repositories).
   4.  `WebAPI` (Controllers/Minimal APIs mapping to MediatR).
-- **Database Schema:** Do not use a single flat table. Normalize entities appropriately (e.g., separate lookup tables for `GPU`, `CPU`, or `ComponentTypes`) to demonstrate deep relational design understanding.
-- **Design Principles:** SOLID, DRY, and clean, self-documenting code.
+- **Database Schema:** Do not use a single flat table. Normalize entities appropriately to reflect both the **finished device** and its **component composition**.
+  - Recommended target model:
+    1. `DeviceCategory` (`Desktop PC`, `Laptop`, `Workstation`, etc.)
+    2. `CatalogProduct` / `DeviceModel` (the composed computer the user browses)
+    3. `ComponentType` (`CPU`, `RAM`, `Storage`, `GPU`, `PSU`, `Port`)
+    4. `ComponentCatalogItem` (individual selectable parts)
+    5. `ProductComponentSelection` (join table connecting a computer to its chosen parts and quantities)
+    6. `InventoryAsset` (real owned/managed device instances)
+- **Design Principles:** SOLID, DRY, and clean, self-documenting code. Prefer clear names that distinguish **device products** from **component products** to avoid ambiguity.
 
 ## 5. Functional Requirements
 
 1.  **View Data:** Present the hardware inventory in an intuitive, realistic UI (e.g., a datagrid or detailed card view) that an everyday user would find natural.
 2.  **Edit Data:** Allow modification of existing records with robust form validation (frontend) and FluentValidation (backend).
-3.  **Search/Filter Data:** Implement a dynamic search capability (e.g., search by GPU, filter by RAM size).
-4.  **Seed Data:** The application must automatically seed the database using the raw data provided above upon startup.
+3.  **Search/Filter Data:** Implement a dynamic search capability (e.g., search by GPU, filter by RAM size, filter products by category such as `Desktop PC` or `Laptop`).
+4.  **Compose a Device:** Allow the user to build or edit a computer by selecting components by type (`CPU`, `RAM`, `Storage`, `GPU`, `PSU`, `Ports`).
+5.  **Seed Data:** The application must automatically seed the database using the raw data provided above upon startup.
 
 ## 6. "Think Outside the Box" (Bonus Objectives for the Agent)
 

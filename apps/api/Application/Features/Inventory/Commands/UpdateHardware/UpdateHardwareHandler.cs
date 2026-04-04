@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Inventory.Commands.UpdateHardware;
 
-public sealed record UpdateHardwareCommand(Guid Id, string AssetName, decimal WeightKg) : ICommand;
+public sealed record UpdateHardwareCommand(Guid Id, string AssetName, decimal WeightKg, string DeviceCategory = "Desktop PC") : ICommand;
 
 public sealed class UpdateHardwareHandler(
     IInventoryRepository repository,
@@ -22,7 +22,7 @@ public sealed class UpdateHardwareHandler(
         if (entity is null)
             return Result.Failure(Error.NotFound(nameof(HardwareInventory), request.Id));
 
-        entity.UpdateBasicSpecs(request.AssetName, request.WeightKg);
+        entity.UpdateBasicSpecs(request.AssetName, request.WeightKg, request.DeviceCategory);
         repository.Update(entity);
         await unitOfWork.CommitAsync(cancellationToken);
 

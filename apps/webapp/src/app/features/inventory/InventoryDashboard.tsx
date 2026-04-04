@@ -1,9 +1,10 @@
+import { Loader2, RefreshCcw } from 'lucide-react';
 import { useGetInventoryQuery } from '@/app/api/apiSlice';
 import { PageHeader } from '@/app/components/ui/PageHeader';
+import { ComputerComposer } from './components/ComputerComposer';
 import { EditHardwareModal } from './components/EditHardwareModal';
 import { HardwareTable } from './components/HardwareTable';
 import { InventoryToolbar } from './components/InventoryToolbar';
-import { Loader2, RefreshCcw } from 'lucide-react';
 import { useInventoryPageState } from './hooks/useInventoryPageState';
 
 export const InventoryDashboard = () => {
@@ -11,11 +12,20 @@ export const InventoryDashboard = () => {
   const {
     form,
     searchTerm,
+    deviceCategoryFilter,
+    tierFilter,
+    sortBy,
+    sortDirection,
     editingItem,
     filteredItems,
     setSearchTerm,
+    setDeviceCategoryFilter,
+    setTierFilter,
+    setSortBy,
+    setSortDirection,
     setEditingItem,
     updateField,
+    resetFilters,
     submitCreate,
     removeItem,
   } = useInventoryPageState(items ?? []);
@@ -54,21 +64,33 @@ export const InventoryDashboard = () => {
   return (
     <section className="mx-auto max-w-7xl space-y-6">
       <PageHeader
-        title="Hardware Inventory Maintenance"
-        description="List, search, add, edit, and delete hardware inventory records."
+        title="Computer Catalog & Inventory"
+        description="List computers in spreadsheet form, filter by category, compose new builds, and maintain physical inventory records."
         meta={
           <div className="flex items-center gap-2 rounded-full border border-zinc-800/50 bg-zinc-900 px-3 py-1.5 font-mono text-xs text-zinc-500">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
             ASSETS: {items?.length ?? 0}
           </div>
         }
       />
 
+      <ComputerComposer />
+
       <InventoryToolbar
         searchTerm={searchTerm}
         form={form}
+        sortBy={sortBy}
+        sortDirection={sortDirection}
+        deviceCategoryFilter={deviceCategoryFilter}
+        tierFilter={tierFilter}
+        resultCount={filteredItems.length}
         onSearchChange={setSearchTerm}
+        onSortChange={setSortBy}
+        onDirectionChange={setSortDirection}
+        onDeviceCategoryFilterChange={setDeviceCategoryFilter}
+        onTierChange={setTierFilter}
         onFieldChange={updateField}
+        onResetFilters={resetFilters}
         onSubmit={submitCreate}
       />
 

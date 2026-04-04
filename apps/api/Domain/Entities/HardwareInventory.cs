@@ -8,17 +8,19 @@ public sealed class HardwareInventory : Entity
 
     public string AssetName { get; private set; } = string.Empty;
     public decimal WeightKg { get; private set; }
+    public string DeviceCategory { get; private set; } = "Desktop PC";
     public string? PerformanceTier { get; private set; }
 
     public IReadOnlyCollection<AssetConfiguration> AssetConfigurations => _assetConfigurations.AsReadOnly();
 
-    public HardwareInventory(string assetName, decimal weightKg)
+    public HardwareInventory(string assetName, decimal weightKg, string deviceCategory = "Desktop PC")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(assetName);
         if (weightKg <= 0) throw new ArgumentOutOfRangeException(nameof(weightKg), "Weight must be greater than zero.");
 
         AssetName = assetName;
         WeightKg = weightKg;
+        DeviceCategory = NormalizeDeviceCategory(deviceCategory);
     }
 
     public void AddConfiguration(Product product, int quantity, decimal? standardValue, string? location)
@@ -30,13 +32,21 @@ public sealed class HardwareInventory : Entity
         UpdatePerformanceTier();
     }
 
-    public void UpdateBasicSpecs(string assetName, decimal weightKg)
+    public void UpdateBasicSpecs(string assetName, decimal weightKg, string deviceCategory = "Desktop PC")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(assetName);
         if (weightKg <= 0) throw new ArgumentOutOfRangeException(nameof(weightKg), "Weight must be greater than zero.");
 
         AssetName = assetName;
         WeightKg = weightKg;
+        DeviceCategory = NormalizeDeviceCategory(deviceCategory);
+    }
+
+    private static string NormalizeDeviceCategory(string? deviceCategory)
+    {
+        return string.IsNullOrWhiteSpace(deviceCategory)
+            ? "Desktop PC"
+            : deviceCategory.Trim();
     }
 
     private void UpdatePerformanceTier()

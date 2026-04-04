@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Inventory.Commands.CreateHardware;
 
-public sealed record CreateHardwareCommand(string AssetName, decimal WeightKg) : ICommand<Guid>;
+public sealed record CreateHardwareCommand(string AssetName, decimal WeightKg, string DeviceCategory = "Desktop PC") : ICommand<Guid>;
 
 public sealed class CreateHardwareHandler(
     IInventoryRepository repository,
@@ -18,7 +18,7 @@ public sealed class CreateHardwareHandler(
     {
         logger.LogInformation("Creating hardware asset: {AssetName}", request.AssetName);
 
-        var entity = new HardwareInventory(request.AssetName, request.WeightKg);
+        var entity = new HardwareInventory(request.AssetName, request.WeightKg, request.DeviceCategory);
         await repository.AddAsync(entity, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
 

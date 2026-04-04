@@ -3,6 +3,7 @@ import {
   InventoryItem,
   useUpdateInventoryMutation,
 } from '../../../api/apiSlice';
+import { DEVICE_CATEGORY_OPTIONS } from '@/app/lib/computerCatalog';
 import { X, Save, Loader2, Info } from 'lucide-react';
 
 interface Props {
@@ -13,11 +14,13 @@ interface Props {
 export const EditHardwareModal: React.FC<Props> = ({ item, onClose }) => {
   const [updateInventory, { isLoading }] = useUpdateInventoryMutation();
   const [assetName, setAssetName] = useState('');
+  const [deviceCategory, setDeviceCategory] = useState('Desktop PC');
   const [weightKg, setWeightKg] = useState<number>(0);
 
   useEffect(() => {
     if (item) {
       setAssetName(item.assetName);
+      setDeviceCategory(item.deviceCategory);
       setWeightKg(item.weightKg);
     }
   }, [item]);
@@ -27,7 +30,12 @@ export const EditHardwareModal: React.FC<Props> = ({ item, onClose }) => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateInventory({ id: item.id, assetName, weightKg }).unwrap();
+      await updateInventory({
+        id: item.id,
+        assetName,
+        deviceCategory,
+        weightKg,
+      }).unwrap();
       onClose();
     } catch (err) {
       console.error('Failed to update inventory:', err);
@@ -63,6 +71,24 @@ export const EditHardwareModal: React.FC<Props> = ({ item, onClose }) => {
               disabled={isLoading}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+              Device Category
+            </label>
+            <select
+              className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-lg px-4 py-2.5 outline-none focus:border-primary/50 transition-all text-sm"
+              value={deviceCategory}
+              onChange={(e) => setDeviceCategory(e.target.value)}
+              disabled={isLoading}
+            >
+              {DEVICE_CATEGORY_OPTIONS.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-2">

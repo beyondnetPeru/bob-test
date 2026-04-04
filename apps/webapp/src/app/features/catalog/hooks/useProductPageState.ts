@@ -5,6 +5,11 @@ import {
   useDeleteProductMutation,
   useUpdateProductMutation,
 } from '@/app/api/apiSlice';
+import {
+  compareText,
+  matchesSearch,
+  type SortDirection,
+} from '@/app/lib/listUtils';
 
 export interface ProductFormState {
   modelName: string;
@@ -12,6 +17,8 @@ export interface ProductFormState {
   categoryId: string;
   manufacturerId: string;
 }
+
+type ProductSortField = 'modelName' | 'categoryName' | 'manufacturerName';
 
 const initialFormState: ProductFormState = {
   modelName: '',
@@ -26,23 +33,60 @@ export const useProductPageState = (products: Product[] = []) => {
   const [deleteProduct] = useDeleteProductMutation();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [manufacturerFilter, setManufacturerFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<ProductSortField>('modelName');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ProductFormState>(initialFormState);
 
-  const filteredProducts = useMemo(
-    () =>
-      products.filter(
+  const filteredProducts = useMemo(() => {
+    const nextProducts = products
+      .filter((product) =>
+        matchesSearch(searchTerm, [
+          product.modelName,
+          product.description,
+          product.categoryName,
+          product.manufacturerName,
+        ])
+      )
+      .filter(
         (product) =>
-          product.modelName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.categoryName
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          product.manufacturerName
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-      ),
-    [products, searchTerm]
-  );
+          categoryFilter === 'all' || product.categoryId === categoryFilter
+      )
+      .filter(
+        (product) =>
+          manufacturerFilter === 'all' ||
+          product.manufacturerId === manufacturerFilter
+      );
+
+    return [...nextProducts].sort((left, right) => {
+      switch (sortBy) {
+        case 'categoryName':
+          return compareText(
+            left.categoryName,
+            right.categoryName,
+            sortDirection
+          );
+        case 'manufacturerName':
+          return compareText(
+            left.manufacturerName,
+            right.manufacturerName,
+            sortDirection
+          );
+        case 'modelName':
+        default:
+          return compareText(left.modelName, right.modelName, sortDirection);
+      }
+    });
+  }, [
+    products,
+    searchTerm,
+    categoryFilter,
+    manufacturerFilter,
+    sortBy,
+    sortDirection,
+  ]);
 
   const updateField = (field: keyof ProductFormState, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -51,6 +95,14 @@ export const useProductPageState = (products: Product[] = []) => {
   const resetForm = () => {
     setEditingId(null);
     setForm(initialFormState);
+  };
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setCategoryFilter('all');
+    setManufacturerFilter('all');
+    setSortBy('modelName');
+    setSortDirection('asc');
   };
 
   const startEdit = (product: Product) => {
@@ -92,11 +144,20 @@ export const useProductPageState = (products: Product[] = []) => {
   return {
     form,
     searchTerm,
+    categoryFilter,
+    manufacturerFilter,
+    sortBy,
+    sortDirection,
     editingId,
     filteredProducts,
     setSearchTerm,
+    setCategoryFilter,
+    setManufacturerFilter,
+    setSortBy,
+    setSortDirection,
     updateField,
     resetForm,
+    resetFilters,
     startEdit,
     submitForm,
     removeProduct,

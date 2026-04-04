@@ -86,7 +86,16 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+
+    if (db.Database.IsSqlite())
+    {
+        await db.Database.EnsureDeletedAsync();
+        await db.Database.EnsureCreatedAsync();
+    }
+    else
+    {
+        await db.Database.EnsureCreatedAsync();
+    }
 
     var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
     var contextPath = Path.Combine(app.Environment.ContentRootPath, "../../.agents/skills/AGENT_CONTEXT.md");

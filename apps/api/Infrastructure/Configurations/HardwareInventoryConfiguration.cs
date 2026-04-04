@@ -16,17 +16,19 @@ public sealed class HardwareInventoryConfiguration : IEntityTypeConfiguration<Ha
         builder.Property(h => h.WeightKg)
             .HasPrecision(10, 2)
             .IsRequired();
+
+        builder.Property(h => h.DeviceCategory)
+            .HasMaxLength(80)
+            .IsRequired();
             
         builder.Property(h => h.PerformanceTier)
             .HasMaxLength(50);
 
         // Audit Shadow Properties
         builder.Property<DateTimeOffset>("CreatedAt")
-            .HasDefaultValueSql("SYSDATETIMEOFFSET()")
             .IsRequired();
             
         builder.Property<DateTimeOffset>("UpdatedAt")
-            .HasDefaultValueSql("SYSDATETIMEOFFSET()")
             .IsRequired();
 
         builder.Property<byte[]>("RowVersion")

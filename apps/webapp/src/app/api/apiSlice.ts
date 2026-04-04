@@ -6,9 +6,16 @@ const API_BASE_URL =
 export interface InventoryItem {
   id: string; // GUID
   assetName: string;
+  deviceCategory: string;
   weightKg: number;
   performanceTier: string | null;
   componentCount: number;
+  cpu: string;
+  ram: string;
+  hardDisc: string;
+  ports: string;
+  video: string;
+  powerSource: string;
 }
 
 export interface Manufacturer {

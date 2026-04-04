@@ -7,8 +7,13 @@ import {
 } from '@/app/api/apiSlice';
 import { Button } from '@/app/components/ui/Button';
 import { TextInput } from '@/app/components/ui/Field';
+import { ListControls } from '@/app/components/ui/ListControls';
 import { PageHeader } from '@/app/components/ui/PageHeader';
-import { SearchInput } from '@/app/components/ui/SearchInput';
+import {
+  compareText,
+  matchesSearch,
+  type SortDirection,
+} from '@/app/lib/listUtils';
 
 export const ManufacturerPage = () => {
   const { data: manufacturers, isLoading } = useGetManufacturersQuery();
@@ -17,17 +22,27 @@ export const ManufacturerPage = () => {
   const [deleteManufacturer] = useDeleteManufacturerMutation();
 
   const [search, setSearch] = useState('');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
 
   const filtered = useMemo(
     () =>
-      (manufacturers ?? []).filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
-      ),
-    [manufacturers, search]
+      [...(manufacturers ?? [])]
+        .filter((item) =>
+          matchesSearch(search, [item.name, item.id.slice(0, 8)])
+        )
+        .sort((left, right) =>
+          compareText(left.name, right.name, sortDirection)
+        ),
+    [manufacturers, search, sortDirection]
   );
+
+  const resetFilters = () => {
+    setSearch('');
+    setSortDirection('asc');
+  };
 
   const onCreate = async (event: FormEvent) => {
     event.preventDefault();
@@ -49,16 +64,26 @@ export const ManufacturerPage = () => {
     <section className="space-y-6">
       <PageHeader
         title="Manufacturer Maintenance"
-        description="List, search, add, edit, and delete manufacturer records."
+        description="List, search, sort, add, edit, and delete component manufacturer records."
       />
 
-      <div className="grid gap-3 md:grid-cols-[1fr_360px]">
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Search manufacturers"
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <ListControls
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search manufacturer name or short id"
+          sortValue="name"
+          onSortChange={() => undefined}
+          sortOptions={[{ value: 'name', label: 'Name' }]}
+          direction={sortDirection}
+          onDirectionChange={setSortDirection}
+          onReset={resetFilters}
+          resultCount={filtered.length}
         />
-        <form onSubmit={onCreate} className="flex gap-2">
+        <form
+          onSubmit={onCreate}
+          className="flex gap-2 rounded-2xl border border-zinc-800/60 bg-zinc-900/30 p-3"
+        >
           <TextInput
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
@@ -89,7 +114,7 @@ export const ManufacturerPage = () => {
             {!isLoading && filtered.length === 0 && (
               <tr>
                 <td colSpan={2} className="px-4 py-4 text-zinc-500">
-                  No manufacturers found.
+                  No manufacturers match the current filters.
                 </td>
               </tr>
             )}
